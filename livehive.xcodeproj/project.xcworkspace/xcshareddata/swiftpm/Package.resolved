@@ -1,0 +1,15 @@
+{
+  "originHash" : "f9f5516c7ecc84f1831c6ec4c3c71b2e554049349ca8e16beba3e1770f3ae3bc",
+  "pins" : [
+    {
+      "identity" : "livehive-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/iangdavis/livehive-ios",
+      "state" : {
+        "revision" : "ed52f44a9e2efd07c64150a483ea511f1101728e",
+        "version" : "0.1.1"
+      }
+    }
+  ],
+  "version" : 3
+}
