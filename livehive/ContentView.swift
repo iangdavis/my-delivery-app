@@ -39,7 +39,7 @@ struct ContentView: View {
                 .disableAutocorrection(true)
 
             TextField("My Delivery API origin (https://host)", text: $apiOrigin)
-                .textInputAutapitalization(.never)
+                .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .font(.system(.body, design: .monospaced))
                 .padding(.horizontal)
