@@ -37,7 +37,8 @@ platform :ios do
       scheme: "myDeliveryApp",
       sdk: "iphoneos",
       destination: "generic/platform=iOS",
-      export_method: "app-store"
+      export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates"
     )
 
     upload_to_testflight(
