@@ -1,0 +1,2 @@
+app_identifier("com.iandavis.livehive")
+apple_dev_portal_id(ENV["APPLE_TEAM_ID"])
