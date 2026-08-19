@@ -24,11 +24,17 @@ platform :ios do
       export_method: "app-store",
       export_options: {
         method: "app-store",
-        signingStyle: "automatic",
-        teamID: ENV.fetch("APPLE_TEAM_ID")
+        signingStyle: "manual",
+        teamID: ENV.fetch("APPLE_TEAM_ID"),
+        provisioningProfiles: {
+          "com.iandavis.livehive" => ENV.fetch("IOS_APP_PROFILE_SPECIFIER"),
+          "com.iandavis.livehive.widget" => ENV.fetch("IOS_WIDGET_PROFILE_SPECIFIER")
+        }
       },
       xcargs: [
-        "-allowProvisioningUpdates",
+        "CODE_SIGN_STYLE=Manual",
+        "DEVELOPMENT_TEAM=#{ENV.fetch("APPLE_TEAM_ID")}",
+        "OTHER_CODE_SIGN_FLAGS=--keychain #{ENV.fetch("BUILD_KEYCHAIN")}",
         "-authenticationKeyPath #{ENV.fetch("APP_STORE_CONNECT_KEY_PATH")}",
         "-authenticationKeyID #{ENV.fetch("APP_STORE_CONNECT_KEY_ID")}",
         "-authenticationKeyIssuerID #{ENV.fetch("APP_STORE_CONNECT_ISSUER_ID")}"
