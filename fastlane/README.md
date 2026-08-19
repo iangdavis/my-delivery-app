@@ -17,7 +17,6 @@ In App Store Connect, create an API key with Developer access and download its `
 | `APP_STORE_CONNECT_KEY_ID` | The API key ID |
 | `APP_STORE_CONNECT_ISSUER_ID` | The issuer ID |
 | `APP_STORE_CONNECT_PRIVATE_KEY` | Base64-encoded contents of the downloaded `.p8` file |
-| `BUILD_KEYCHAIN_PASSWORD` | Any strong password used only for the temporary CI keychain |
 | `IOS_DISTRIBUTION_CERTIFICATE_BASE64` | Base64-encoded `.p12` Apple Distribution certificate |
 | `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password for the `.p12` certificate |
 | `IOS_APP_PROVISIONING_PROFILE_BASE64` | Base64-encoded App Store profile for `com.iandavis.livehive` |
@@ -32,7 +31,7 @@ base64 -i MyDeliveryApp_AppStore.mobileprovision | pbcopy
 base64 -i MyDeliveryWidget_AppStore.mobileprovision | pbcopy
 ```
 
-The workflow uses the Apple Developer team already configured in the Xcode project (`G6T78BC5DH`). CI imports the signing assets into a temporary keychain and does not ask Xcode to create new certificates or profiles during the archive.
+The workflow uses the Apple Developer team already configured in the Xcode project (`G6T78BC5DH`). CI imports the signing assets into a temporary keychain with a per-run generated password and does not ask Xcode to create new certificates or profiles during the archive.
 
 Finally, in App Store Connect -> TestFlight -> your internal tester group, enable automatic distribution of new builds. The workflow uploads the build and exits rather than waiting for Apple's build processing.
 
