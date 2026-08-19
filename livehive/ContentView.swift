@@ -5,12 +5,13 @@ import LiveHive
 struct ContentView: View {
     @AppStorage("livehive.publicKey") private var publicKey = ""
     @AppStorage("mydelivery.apiOrigin") private var apiOrigin = "https://live-activities.onrender.com"
+    @AppStorage("apns.deviceToken") private var apnsToken = ""
 
     @State private var activity: Activity<DeliveryAttributes>?
     @State private var message = "Start a Live Activity, then lock the phone."
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Text(message)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -19,6 +20,13 @@ struct ContentView: View {
             if let id = activity?.id {
                 Text(id)
                     .font(.system(.footnote, design: .monospaced))
+                    .textSelection(.enabled)
+            }
+
+            if !apnsToken.isEmpty {
+                Text("APNs token: ...\(apnsToken.suffix(6))")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.secondary)
                     .textSelection(.enabled)
             }
 
