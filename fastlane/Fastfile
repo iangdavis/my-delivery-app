@@ -11,21 +11,19 @@ platform :ios do
     )
 
     update_code_signing_settings(
-      use_automatic_signing: false,
+      use_automatic_signing: true,
       path: "livehive.xcodeproj",
       team_id: ENV.fetch("APPLE_TEAM_ID"),
       targets: ["myDeliveryApp"],
-      profile_name: ENV.fetch("IOS_APP_PROFILE_SPECIFIER"),
-      code_sign_identity: "Apple Distribution"
+      code_sign_identity: "Apple Development"
     )
 
     update_code_signing_settings(
-      use_automatic_signing: false,
+      use_automatic_signing: true,
       path: "livehive.xcodeproj",
       team_id: ENV.fetch("APPLE_TEAM_ID"),
       targets: ["widgetExtension"],
-      profile_name: ENV.fetch("IOS_WIDGET_PROFILE_SPECIFIER"),
-      code_sign_identity: "Apple Distribution"
+      code_sign_identity: "Apple Development"
     )
 
     increment_build_number(
@@ -39,22 +37,7 @@ platform :ios do
       scheme: "myDeliveryApp",
       sdk: "iphoneos",
       destination: "generic/platform=iOS",
-      export_method: "app-store",
-      export_options: {
-        method: "app-store",
-        signingStyle: "manual",
-        teamID: ENV.fetch("APPLE_TEAM_ID"),
-        provisioningProfiles: {
-          "com.iandavis.livehive" => ENV.fetch("IOS_APP_PROFILE_SPECIFIER"),
-          "com.iandavis.livehive.widget" => ENV.fetch("IOS_WIDGET_PROFILE_SPECIFIER")
-        }
-      },
-      xcargs: [
-        "OTHER_CODE_SIGN_FLAGS=--keychain #{ENV.fetch("BUILD_KEYCHAIN")}",
-        "-authenticationKeyPath #{ENV.fetch("APP_STORE_CONNECT_KEY_PATH")}",
-        "-authenticationKeyID #{ENV.fetch("APP_STORE_CONNECT_KEY_ID")}",
-        "-authenticationKeyIssuerID #{ENV.fetch("APP_STORE_CONNECT_ISSUER_ID")}"
-      ].join(" ")
+      export_method: "app-store"
     )
 
     upload_to_testflight(
