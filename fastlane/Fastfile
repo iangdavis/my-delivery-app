@@ -38,12 +38,7 @@ platform :ios do
       sdk: "iphoneos",
       destination: "generic/platform=iOS",
       export_method: "app-store",
-      xcargs: [
-        "-allowProvisioningUpdates",
-        "-authenticationKeyPath #{ENV.fetch("APP_STORE_CONNECT_KEY_PATH")}",
-        "-authenticationKeyID #{ENV.fetch("APP_STORE_CONNECT_KEY_ID")}",
-        "-authenticationKeyIssuerID #{ENV.fetch("APP_STORE_CONNECT_ISSUER_ID")}",
-      ].join(" ")
+      xcargs: "-allowProvisioningUpdates"
     )
 
     upload_to_testflight(
