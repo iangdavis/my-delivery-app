@@ -23,7 +23,6 @@ jobs:
       APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
       APP_STORE_CONNECT_KEY_PATH: ${{ github.workspace }}/AuthKey.p8
       BUILD_KEYCHAIN: ${{ github.workspace }}/build-signing.keychain-db
-      BUILD_KEYCHAIN_PASSWORD: ${{ secrets.BUILD_KEYCHAIN_PASSWORD }}
       IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
       IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
       IOS_APP_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_APP_PROVISIONING_PROFILE_BASE64 }}
@@ -49,7 +48,6 @@ jobs:
           set -euo pipefail
 
           for name in \
-            BUILD_KEYCHAIN_PASSWORD \
             IOS_DISTRIBUTION_CERTIFICATE_BASE64 \
             IOS_DISTRIBUTION_CERTIFICATE_PASSWORD \
             IOS_APP_PROVISIONING_PROFILE_BASE64 \
@@ -60,6 +58,9 @@ jobs:
               exit 1
             fi
           done
+
+          BUILD_KEYCHAIN_PASSWORD="$(uuidgen)$(uuidgen)"
+          echo "BUILD_KEYCHAIN_PASSWORD=$BUILD_KEYCHAIN_PASSWORD" >> "$GITHUB_ENV"
 
           CERTIFICATE_PATH="$RUNNER_TEMP/distribution_certificate.p12"
           APP_PROFILE_PATH="$RUNNER_TEMP/app.mobileprovision"
