@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   build-and-upload:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 45
     env:
       APPLE_TEAM_ID: G6T78BC5DH
