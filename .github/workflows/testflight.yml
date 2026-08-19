@@ -64,6 +64,8 @@ jobs:
           CERTIFICATE_PATH="$RUNNER_TEMP/distribution_certificate.p12"
           APP_PROFILE_PATH="$RUNNER_TEMP/app.mobileprovision"
           WIDGET_PROFILE_PATH="$RUNNER_TEMP/widget.mobileprovision"
+          APP_PROFILE_PLIST="$RUNNER_TEMP/app-profile.plist"
+          WIDGET_PROFILE_PLIST="$RUNNER_TEMP/widget-profile.plist"
           PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
 
           echo "$IOS_DISTRIBUTION_CERTIFICATE_BASE64" | base64 -D > "$CERTIFICATE_PATH"
@@ -78,11 +80,13 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "$BUILD_KEYCHAIN_PASSWORD" "$BUILD_KEYCHAIN"
 
           mkdir -p "$PROFILE_DIR"
+          security cms -D -i "$APP_PROFILE_PATH" > "$APP_PROFILE_PLIST"
+          security cms -D -i "$WIDGET_PROFILE_PATH" > "$WIDGET_PROFILE_PLIST"
 
-          APP_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin <<< "$(security cms -D -i "$APP_PROFILE_PATH")")
-          APP_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print Name' /dev/stdin <<< "$(security cms -D -i "$APP_PROFILE_PATH")")
-          WIDGET_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin <<< "$(security cms -D -i "$WIDGET_PROFILE_PATH")")
-          WIDGET_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print Name' /dev/stdin <<< "$(security cms -D -i "$WIDGET_PROFILE_PATH")")
+          APP_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$APP_PROFILE_PLIST")
+          APP_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print Name' "$APP_PROFILE_PLIST")
+          WIDGET_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$WIDGET_PROFILE_PLIST")
+          WIDGET_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print Name' "$WIDGET_PROFILE_PLIST")
 
           cp "$APP_PROFILE_PATH" "$PROFILE_DIR/$APP_PROFILE_UUID.mobileprovision"
           cp "$WIDGET_PROFILE_PATH" "$PROFILE_DIR/$WIDGET_PROFILE_UUID.mobileprovision"
@@ -103,4 +107,6 @@ jobs:
           rm -f "$RUNNER_TEMP/distribution_certificate.p12"
           rm -f "$RUNNER_TEMP/app.mobileprovision"
           rm -f "$RUNNER_TEMP/widget.mobileprovision"
+          rm -f "$RUNNER_TEMP/app-profile.plist"
+          rm -f "$RUNNER_TEMP/widget-profile.plist"
           security delete-keychain "$BUILD_KEYCHAIN" || true
