@@ -10,6 +10,24 @@ platform :ios do
       is_key_content_base64: true
     )
 
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "livehive.xcodeproj",
+      team_id: ENV.fetch("APPLE_TEAM_ID"),
+      targets: ["myDeliveryApp"],
+      profile_name: ENV.fetch("IOS_APP_PROFILE_SPECIFIER"),
+      code_sign_identity: "Apple Distribution"
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "livehive.xcodeproj",
+      team_id: ENV.fetch("APPLE_TEAM_ID"),
+      targets: ["widgetExtension"],
+      profile_name: ENV.fetch("IOS_WIDGET_PROFILE_SPECIFIER"),
+      code_sign_identity: "Apple Distribution"
+    )
+
     increment_build_number(
       build_number: latest_testflight_build_number(
         api_key: api_key,
@@ -32,8 +50,6 @@ platform :ios do
         }
       },
       xcargs: [
-        "CODE_SIGN_STYLE=Manual",
-        "DEVELOPMENT_TEAM=#{ENV.fetch("APPLE_TEAM_ID")}",
         "OTHER_CODE_SIGN_FLAGS=--keychain #{ENV.fetch("BUILD_KEYCHAIN")}",
         "-authenticationKeyPath #{ENV.fetch("APP_STORE_CONNECT_KEY_PATH")}",
         "-authenticationKeyID #{ENV.fetch("APP_STORE_CONNECT_KEY_ID")}",
