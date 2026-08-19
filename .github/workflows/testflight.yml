@@ -22,6 +22,12 @@ jobs:
       APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
       APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
       APP_STORE_CONNECT_KEY_PATH: ${{ github.workspace }}/AuthKey.p8
+      BUILD_KEYCHAIN: ${{ github.workspace }}/build-signing.keychain-db
+      BUILD_KEYCHAIN_PASSWORD: ${{ secrets.BUILD_KEYCHAIN_PASSWORD }}
+      IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+      IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+      IOS_APP_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_APP_PROVISIONING_PROFILE_BASE64 }}
+      IOS_WIDGET_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_WIDGET_PROVISIONING_PROFILE_BASE64 }}
 
     steps:
       - uses: actions/checkout@v4
@@ -37,10 +43,64 @@ jobs:
           echo "$APP_STORE_CONNECT_PRIVATE_KEY" | base64 -D > "$APP_STORE_CONNECT_KEY_PATH"
           chmod 600 "$APP_STORE_CONNECT_KEY_PATH"
 
+      - name: Install Apple signing assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for name in \
+            BUILD_KEYCHAIN_PASSWORD \
+            IOS_DISTRIBUTION_CERTIFICATE_BASE64 \
+            IOS_DISTRIBUTION_CERTIFICATE_PASSWORD \
+            IOS_APP_PROVISIONING_PROFILE_BASE64 \
+            IOS_WIDGET_PROVISIONING_PROFILE_BASE64
+          do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required secret: $name" >&2
+              exit 1
+            fi
+          done
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/distribution_certificate.p12"
+          APP_PROFILE_PATH="$RUNNER_TEMP/app.mobileprovision"
+          WIDGET_PROFILE_PATH="$RUNNER_TEMP/widget.mobileprovision"
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          echo "$IOS_DISTRIBUTION_CERTIFICATE_BASE64" | base64 -D > "$CERTIFICATE_PATH"
+          echo "$IOS_APP_PROVISIONING_PROFILE_BASE64" | base64 -D > "$APP_PROFILE_PATH"
+          echo "$IOS_WIDGET_PROVISIONING_PROFILE_BASE64" | base64 -D > "$WIDGET_PROFILE_PATH"
+
+          security create-keychain -p "$BUILD_KEYCHAIN_PASSWORD" "$BUILD_KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$BUILD_KEYCHAIN"
+          security unlock-keychain -p "$BUILD_KEYCHAIN_PASSWORD" "$BUILD_KEYCHAIN"
+          security import "$CERTIFICATE_PATH" -P "$IOS_DISTRIBUTION_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$BUILD_KEYCHAIN"
+          security list-keychain -d user -s "$BUILD_KEYCHAIN" $(security list-keychains -d user | sed 's/[" ]//g')
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$BUILD_KEYCHAIN_PASSWORD" "$BUILD_KEYCHAIN"
+
+          mkdir -p "$PROFILE_DIR"
+
+          APP_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin <<< "$(security cms -D -i "$APP_PROFILE_PATH")")
+          APP_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print Name' /dev/stdin <<< "$(security cms -D -i "$APP_PROFILE_PATH")")
+          WIDGET_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' /dev/stdin <<< "$(security cms -D -i "$WIDGET_PROFILE_PATH")")
+          WIDGET_PROFILE_NAME=$(/usr/libexec/PlistBuddy -c 'Print Name' /dev/stdin <<< "$(security cms -D -i "$WIDGET_PROFILE_PATH")")
+
+          cp "$APP_PROFILE_PATH" "$PROFILE_DIR/$APP_PROFILE_UUID.mobileprovision"
+          cp "$WIDGET_PROFILE_PATH" "$PROFILE_DIR/$WIDGET_PROFILE_UUID.mobileprovision"
+
+          {
+            echo "IOS_APP_PROFILE_SPECIFIER=$APP_PROFILE_NAME"
+            echo "IOS_WIDGET_PROFILE_SPECIFIER=$WIDGET_PROFILE_NAME"
+          } >> "$GITHUB_ENV"
+
       - name: Build and upload to TestFlight
         run: bundle exec fastlane ios beta
 
-      - name: Remove App Store Connect API key
+      - name: Remove signing assets
         if: always()
         shell: bash
-        run: rm -f "$APP_STORE_CONNECT_KEY_PATH"
+        run: |
+          rm -f "$APP_STORE_CONNECT_KEY_PATH"
+          rm -f "$RUNNER_TEMP/distribution_certificate.p12"
+          rm -f "$RUNNER_TEMP/app.mobileprovision"
+          rm -f "$RUNNER_TEMP/widget.mobileprovision"
+          security delete-keychain "$BUILD_KEYCHAIN" || true
