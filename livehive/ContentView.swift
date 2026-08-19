@@ -4,7 +4,7 @@ import LiveHive
 
 struct ContentView: View {
     @AppStorage("livehive.publicKey") private var publicKey = ""
-    @AppStorage("mydelivery.apiOrigin") private var apiOrigin = ""
+    @AppStorage("mydelivery.apiOrigin") private var apiOrigin = "https://live-activities.onrender.com"
 
     @State private var activity: Activity<DeliveryAttributes>?
     @State private var message = "Start a Live Activity, then lock the phone."
